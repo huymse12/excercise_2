@@ -3,6 +3,7 @@ import mysql.connector
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
+import model
 
 
 def convert_string_to_datetime(value):
@@ -33,8 +34,14 @@ def connect_my_sql():
     return mydb
 
 
-def get_top_data(db, top):
-    pass
+def get_top_film(db, top):
+    cursor = db.cursor()
+    cursor.execute("select MovieTitle , WorldwideGross  from FilmsRevenue limit {}".format(top))
+    data = cursor.fetchall()
+    film_entity = []
+    for item in data:
+        film_entity.append(model.FilmsRevenueEntity(item[0], item[1]))
+    return film_entity
 
 
 def insert_data():
@@ -68,14 +75,12 @@ def visualize_data_bar(x, y):
 
 def run_app():
     db = connect_my_sql()
-    cursor = db.cursor()
-    cursor.execute("select MovieTitle , WorldwideGross  from FilmsRevenue limit 5")
-    data = cursor.fetchall()
+    data = get_top_film(db, 10)
     arr_movie_title = []
     arr_ww_gross = []
     for value in data:
-        arr_movie_title.append(value[0])
-        arr_ww_gross.append(value[1])
+        arr_movie_title.append(value.title)
+        arr_ww_gross.append(value.ww_gross)
 
     x = np.array(arr_movie_title)
     y = np.array(arr_ww_gross)
